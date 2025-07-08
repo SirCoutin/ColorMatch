@@ -34,12 +34,11 @@ def add_color_to_michel(image_path, name, stamp_name):
   most_common_match = Counter(hsv_pixel_array).most_common(1)[0][0]
   michel_colors[name] = most_common_match
   
-  if stamp_name not in stamp_colors:
-       stamp_colors[stamp_name] = []
-  elif name in stamp_colors[stamp_name]:
-       pass
-  else:
-       stamp_colors[stamp_name].append(name)
+if stamp_name not in stamp_colors:
+    stamp_colors[stamp_name] = []
+
+if name not in stamp_colors[stamp_name]:
+    stamp_colors[stamp_name].append(name)
 
   print(f"Added {color_name} with the RGB value of {most_common_match} successfully!")
 
