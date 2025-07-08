@@ -2,6 +2,9 @@ import json
 import os
 from collections import Counter
 from PIL import Image
+from colormath.color_objects import sRGBColor, LabColor
+from colormath.color_conversions import convert_color
+from colormath.color_diff import delta_e_cie2000
 
 michel_colors = {}
 stamp_colors = {}
@@ -23,15 +26,26 @@ else:
             json.dump(stamp_colors, colors)
 
 def add_color_to_michel(image_path, name, stamp_name):
-  img = Image.open(image_path).convert("HSV")
+  img = Image.open(image_path).convert("RGB")
   pixels = list(img.getdata())
 
-  most_common_match = Counter(pixels).most_common(1)[0][0]
+  lab_pixel_array = []
+
+  for pixel in pixels:
+    rgb = sRGBColor(pixel[0] / 255, pixel[1] / 255, pixel[2] / 255)
+    lab = convert_color(rgb, LabColor)
+    lab_tuple = (round(lab.lab_l, 2), round(lab.lab_a, 2), round(lab.lab_b, 2))
+    lab_pixel_array.append(lab_tuple)
+
+  most_common_match = Counter(lab_pixel_array).most_common(1)[0][0]
   michel_colors[name] = most_common_match
   
   if stamp_name not in stamp_colors:
        stamp_colors[stamp_name] = []
-  stamp_colors[stamp_name].append(name)
+  elif name in stamp_colors[stamp_name]:
+       pass
+  else:
+       stamp_colors[stamp_name].append(name)
 
   print(f"Added {color_name} with the RGB value of {most_common_match} successfully!")
 
