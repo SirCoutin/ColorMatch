@@ -26,12 +26,20 @@ def add_color_to_michel(image_path, name, stamp_name):
   img = Image.open(image_path).convert("HSV")
   pixels = list(img.getdata())
 
-  most_common_match = Counter(pixels).most_common(1)[0][0]
+  hsv_pixel_array = []
+
+  for pixel in pixels:
+    hsv_pixel_array.append(round((pixel[0]*(360/255), 2), round(pixel[1]*(100/255), 2), round(pixel[2]*(100/255, 2))))
+
+  most_common_match = Counter(hsv_pixel_array).most_common(1)[0][0]
   michel_colors[name] = most_common_match
   
   if stamp_name not in stamp_colors:
        stamp_colors[stamp_name] = []
-  stamp_colors[stamp_name].append(name)
+  elif name in stamp_colors[stamp_name]:
+       pass
+  else:
+       stamp_colors[stamp_name].append(name)
 
   print(f"Added {color_name} with the RGB value of {most_common_match} successfully!")
 
@@ -57,4 +65,3 @@ with open("michel_colors.json", "w") as colors:
 
 with open("stamp_colors.json", "w") as colors:
   json.dump(stamp_colors, colors)
-
