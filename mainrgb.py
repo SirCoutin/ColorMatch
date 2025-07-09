@@ -3,20 +3,20 @@ from collections import Counter
 import json
 
 michel_colors = {}
-with open("michel_colors_hsv.json", "r") as f:
+with open("michel_colors_rgb.json", "r") as f:
     michel_colors = json.load(f)
 
 stamp_colors = {}
-with open("stamp_colors_hsv.json", "r") as f:
+with open("stamp_colors_rgb.json", "r") as f:
     stamp_colors = json.load(f)
 
 #Check color matches
-def is_color_in_range(hsv, stamp_colors, michel_colors, tolerance):
+def is_color_in_range(rgb, stamp_colors, michel_colors, tolerance):
     for color_name in stamp_colors:
         color_rgb = michel_colors[color_name]
-        dist = rgb_distance(hsv, color_rgb)
+        dist = rgb_distance(rgb, color_rgb)
         if dist <= tolerance:
-            print(f" --> Matched with '{color_name}' (HSV {hsv} stamp color {color_rgb})")
+            print(f" --> Matched with '{color_name}' (RGB {rgb} stamp color {color_rgb})")
             return True
     return False
 
@@ -36,21 +36,12 @@ def rgb_distance(rgb1, rgb2):
 
 # Function to process image and filter for target color
 def filter_image_by_color(image_path, stamp_colors, michel_colors, michel_number, tolerance=15):
-    img = Image.open(image_path).convert("HSV")
+    img = Image.open(image_path).convert("RGB")
     pixels = list(img.getdata())
-
-    hsv_pixel = []
-
-    for pixel in pixels:
-        hsv_pixel.append((
-            round(pixel[0] * 360 / 255, 2),
-            round(pixel[1] * 100 / 255, 2),
-            round(pixel[2] * 100 / 255, 2)
-        ))
 
     matching_pixels = []
 
-    for pixel in hsv_pixel:
+    for pixel in pixels:
         if is_color_in_range(pixel, stamp_colors, michel_colors, tolerance):
             matching_pixels.append(pixel)
         else:

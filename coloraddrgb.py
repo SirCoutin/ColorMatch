@@ -6,36 +6,35 @@ from PIL import Image
 michel_colors = {}
 stamp_colors = {}
 
-if os.path.exists("michel_colors_hsv.json"):
-  with open("michel_colors.json", "r") as colors:
+if os.path.exists("michel_colors_rgb.json"):
+  with open("michel_colors_rgb.json", "r") as colors:
             michel_colors = json.load(colors)
 else:
   print("Creating new database")
-  with open("michel_colors_hsv.json", "w") as colors:
+  with open("michel_colors_rgb.json", "w") as colors:
             json.dump(michel_colors, colors)
 
-if os.path.exists("stamp_colors_hsv.json"):
-  with open("stamp_colors_hsv.json", "r") as colors:
+if os.path.exists("stamp_colors_rgb.json"):
+  with open("stamp_colors_rgb.json", "r") as colors:
             stamp_colors = json.load(colors)
 else:
   print("Creating new database")
-  with open("stamp_colors_hsv.json", "w") as colors:
+  with open("stamp_colors_rgb.json", "w") as colors:
             json.dump(stamp_colors, colors)
 
+def quantize_rgb(rgb, step=2):
+    return tuple((channel // step) * step for channel in rgb)
+
 def add_color_to_michel(image_path, name, stamp_name):
-  img = Image.open(image_path).convert("HSV")
+  img = Image.open(image_path).convert("RGB")
   pixels = list(img.getdata())
 
-  hsv_pixel_array = []
+  quantized_pixels = []
 
   for pixel in pixels:
-    hsv_pixel_array.append((
-      round(pixel[0] * (360 / 255), 2),
-      round(pixel[1] * (100 / 255), 2),
-      round(pixel[2] * (100 / 255), 2)
-    ))
+      quantized_pixels.append(quantize_rgb(pixel))
 
-  most_common_match = Counter(hsv_pixel_array).most_common(1)[0][0]
+  most_common_match = Counter(quantized_pixels).most_common(1)[0][0] 
   michel_colors[name] = most_common_match
   
   if stamp_name not in stamp_colors:
@@ -63,8 +62,9 @@ while True:
     else:
       add_color_to_michel(image_path, color_name, stamp_name)
 
-with open("michel_colors_hsv.json", "w") as colors:
+with open("michel_colors_rgb.json", "w") as colors:
   json.dump(michel_colors, colors)
 
-with open("stamp_colors_hsv.json", "w") as colors:
+with open("stamp_colors_rgb.json", "w") as colors:
   json.dump(stamp_colors, colors)
+
