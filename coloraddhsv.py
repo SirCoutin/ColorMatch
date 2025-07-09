@@ -29,7 +29,11 @@ def add_color_to_michel(image_path, name, stamp_name):
   hsv_pixel_array = []
 
   for pixel in pixels:
-    hsv_pixel_array.append(round((pixel[0]*(360/255), 2), round(pixel[1]*(100/255), 2), round(pixel[2]*(100/255, 2))))
+    hsv_pixel_array.append((
+      round(pixel[0] * (360 / 255), 2),
+      round(pixel[1] * (100 / 255), 2),
+      round(pixel[2] * (100 / 255), 2)
+    ))
 
   most_common_match = Counter(hsv_pixel_array).most_common(1)[0][0]
   michel_colors[name] = most_common_match
