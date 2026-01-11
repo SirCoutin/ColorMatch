@@ -35,7 +35,7 @@ def rgb_distance(rgb1, rgb2):
     return sum((a - b) ** 2 for a, b in zip(rgb1, rgb2)) ** 0.5
 
 # Function to process image and filter for target color
-def filter_image_by_color(image_path, stamp_colors, michel_colors, michel_number, tolerance=15):
+def filter_image_by_color(image_path, stamp_colors, michel_colors, michel_number, tolerance=25):
     img = Image.open(image_path).convert("RGB")
     pixels = list(img.getdata())
 
