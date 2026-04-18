@@ -1,0 +1,6 @@
+.venv/
+.vscode/
+backup/
+Pics/
+__pycache__/
+mainlabtest.py
