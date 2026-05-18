@@ -4,3 +4,5 @@ backup/
 Pics/
 __pycache__/
 mainlabtest.py
+michel_colors_lab.json 
+stamp_colors_name.json

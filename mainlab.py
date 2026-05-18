@@ -16,21 +16,31 @@ def get_allowed_color_names(michel_number):
     """Return the configured color names for a Michel number as a list."""
     color_names = stamp_colors[michel_number]
     if isinstance(color_names, str):
-        return [color_names]
+        color_name_list = []
+        color_name_list.append(color_names)
+        return color_name_list
     return color_names
 
 
 def build_known_color_array(color_names):
     """Resolve stored color names into a NumPy array of Lab values."""
-    missing_names = [name for name in color_names if name not in michel_colors]
+    missing_names = []
+    for name in color_names:
+        if name not in michel_colors:
+            missing_names.append(name)
+
     if missing_names:
         missing_text = ", ".join(missing_names)
         raise KeyError(f"Missing Lab values for: {missing_text}")
 
-    return np.array([michel_colors[name] for name in color_names], dtype=float)
+    known_color_list = []
+    for name in color_names:
+        known_color_list.append(michel_colors[name])
+
+    return np.array(known_color_list, dtype=float)
 
 
-def match_stamp_pixels_to_palette(stamp_pixels, known_colors, threshold=8):
+def match_stamp_pixels_to_palette(stamp_pixels, known_colors, threshold=20):
     """Match every extracted stamp pixel against all allowed Lab colors at once."""
     dist = colour.difference.delta_E_CIE2000(
         stamp_pixels[:, None, :],
@@ -46,15 +56,16 @@ def match_stamp_pixels_to_palette(stamp_pixels, known_colors, threshold=8):
 
 def summarize_matches(color_names, best_match_idx, best_match_dist, match_mask):
     """Aggregate pixel matches into per-color totals and average Delta E values."""
-    summary = {
-        name: {"count": 0, "total_delta_e": 0.0}
-        for name in color_names
-    }
+    summary = {}
+    for name in color_names:
+        summary[name] = {"count": 0, "total_delta_e": 0.0}
 
     matched_indices = best_match_idx[match_mask]
     matched_distances = best_match_dist[match_mask]
 
-    for palette_idx, delta_e in zip(matched_indices, matched_distances):
+    for match_index in range(len(matched_indices)):
+        palette_idx = matched_indices[match_index]
+        delta_e = matched_distances[match_index]
         color_name = color_names[palette_idx]
         summary[color_name]["count"] += 1
         summary[color_name]["total_delta_e"] += float(delta_e)
@@ -69,8 +80,15 @@ def print_match_summary(michel_number, summary):
 
     for name, data in summary.items():
         count = data["count"]
-        avg_delta_e = data["total_delta_e"] / count if count else 0.0
-        score = count / (avg_delta_e + 1e-6) if count else 0.0
+        if count:
+            avg_delta_e = data["total_delta_e"] / count
+        else:
+            avg_delta_e = 0.0
+
+        if count:
+            score = count / (avg_delta_e + 1e-6)
+        else:
+            score = 0.0
 
         print(
             f"{name}: matches={count}, avg_delta_e={avg_delta_e:.2f}, score={score:.2f}"
